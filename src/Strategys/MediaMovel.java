@@ -36,6 +36,7 @@ public class MediaMovel implements Strategy {
     // Se a longa for menor que a curta no dia atual
     // e a longa anterior for maior do que a curta anterior
     // e o estado for diferente de LONG, eu COMPRO
+    
     public MediaMovel(double capital, double slippage, int volumeNegociado, int total_days) {
         this.capital = capital;
         this.slippage = slippage;
@@ -122,8 +123,10 @@ public class MediaMovel implements Strategy {
         for (double longa : this.mmLonga) {
             calcLonga += longa;
         }
+        
+        
         this.lDay = calcLonga / this.mmLonga.length;
-
+        
         for (double curta : this.mmCurta) {
             calcCurta += curta;
         }

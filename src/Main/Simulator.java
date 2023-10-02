@@ -6,6 +6,7 @@ import Strategys.MediaMovel;
 import java.util.List;
 import java.util.ArrayList;
 
+import Strategys.DataBase;
 import Strategys.Strategy;
 import Strategys.SimpleStrategy;
 
@@ -21,8 +22,10 @@ public class Simulator {
         
         MediaMovel mediaMovel = new MediaMovel(0, 0.0, 1, marketUpdate.size());
         SimpleStrategy simpleStrategy = new SimpleStrategy(0, 0.0, 1, marketUpdate.size());
+        DataBase dataBase = new DataBase(marketUpdate.size());
         //strategies.add(simpleStrategy);
         strategies.add(mediaMovel);    
+        strategies.add(dataBase);
         
         for (Strategy st : strategies) {
             st.Create();
@@ -43,7 +46,7 @@ public class Simulator {
         }
 
         //simpleStrategy.ApresentaCapital();
-        mediaMovel.ApresentaCapital();
+        //mediaMovel.ApresentaCapital();
     }
 
 }
