@@ -124,13 +124,13 @@ public class MediaMovel implements Strategy {
             calcLonga += longa;
         }
         
-        
         this.lDay = calcLonga / this.mmLonga.length;
         
         for (double curta : this.mmCurta) {
             calcCurta += curta;
         }
         this.cDay = calcCurta / this.mmCurta.length;
+    
     }
 
     private void atualizaMedia(MarketData update) {

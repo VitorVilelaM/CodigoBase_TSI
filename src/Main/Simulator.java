@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import Strategys.DataBase;
 import Strategys.Strategy;
 import Strategys.SimpleStrategy;
+import Strategys.StrategyDataBase;
 
 /**
  *
@@ -22,10 +23,15 @@ public class Simulator {
         
         MediaMovel mediaMovel = new MediaMovel(0, 0.0, 1, marketUpdate.size());
         SimpleStrategy simpleStrategy = new SimpleStrategy(0, 0.0, 1, marketUpdate.size());
+        StrategyDataBase sdb = new StrategyDataBase();
+        
         DataBase dataBase = new DataBase(marketUpdate.size());
+        
+
         //strategies.add(simpleStrategy);
-        strategies.add(mediaMovel);    
+        //strategies.add(mediaMovel);    
         strategies.add(dataBase);
+        //strategies.add(sdb);
         
         for (Strategy st : strategies) {
             st.Create();

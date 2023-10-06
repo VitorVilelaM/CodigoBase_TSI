@@ -5,6 +5,8 @@ import DataManipulation.WriteData;
 import com.tictactec.ta.lib.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -16,7 +18,7 @@ public class DataBase implements Strategy {
 
     public static final int LONG = 20;
     public static final int SHORT = 7;
-
+    private DecimalFormat formatador = new DecimalFormat("0.00");
     private WriteData wd = new WriteData();
 
     private Core c = new Core();
@@ -40,6 +42,8 @@ public class DataBase implements Strategy {
     private double outADXC[];
 
     private double outSAR[];
+
+    private double oftenPrice;
 
     // Nao lembro o nome das saidas
     private double diff[];
@@ -113,8 +117,11 @@ public class DataBase implements Strategy {
 
     @Override
     public void Create() {
+        this.oftenPrice = 0;
+        wd.Write("Date,CP,CP -1,CP -2,CP -3,CP -4,CP -5,R -1,R -2,R -3,R -4,R -5,SMAL,EMAL,WMAL,SMAC,EMAC,WMAC,RSIC,RSIL,ADXC,ADXL,SAR,R,B");
     }
 
+    // LAG FEATURES     
     @Override
     public void Start(Date init) {
     }
@@ -126,6 +133,7 @@ public class DataBase implements Strategy {
         this.lowPrices[this.atualDay] = update.getLow();
 
         if (this.atualDay > 0) {
+            this.diff[atualDay - 1] = oftenPrice - update.getClose();
             this.diff[this.atualDay] = this.closePrices[this.atualDay] - this.closePrices[this.atualDay - 1];
             if (diff[this.atualDay] > 0) {
                 this.binary[this.atualDay] = 1;
@@ -149,7 +157,9 @@ public class DataBase implements Strategy {
         this.retCodeADXL = c.adx(startIdx, endIdx, highPrices, lowPrices, closePrices, LONG, beginADXL, lengthADXL, outADXL);
 
         this.retCodeSAR = c.sar(startIdx, endIdx, highPrices, lowPrices, 0.00, 5.87, beginSAR, lengthSAR, outSAR);
-        // smaL, emaL, wmaL, smaC, emaC, wmaC, rsiC, rciL, adxL, adxC, sar, macd
+
+        // smaL, emaL, wmaL, smaC, emaC, wmaC, rsiC, rciL, adxL, adxC, sar
+        this.oftenPrice = update.getClose();
     }
 
     @Override
@@ -162,7 +172,18 @@ public class DataBase implements Strategy {
                     && retCodeSAR == RetCode.Success) {
 
                 StringBuilder line = new StringBuilder();
+                SimpleDateFormat sdf = new SimpleDateFormat("YYYYMMdd");
 
+                line.append(sdf.format(finish.getDate()));
+                line.append(",");
+                
+                line.append(finish.getClose());
+                line.append(",");
+
+                beforeClosePrices(line);
+                beforeRegressionPrices(line);
+
+                
                 if (atualDay >= beginSMAL.value) {
                     line.append(round(outSMAl[atualDay - beginSMAL.value], 2));
                     line.append(",");
@@ -232,7 +253,6 @@ public class DataBase implements Strategy {
                 line.append(diff[atualDay]);
                 line.append(",");
                 line.append(binary[atualDay]);
-                line.append(",");
                 //System.out.println(line.toString());
                 wd.Write(line.toString());
                 this.atualDay++;
@@ -243,101 +263,42 @@ public class DataBase implements Strategy {
         }
     }
 
+    public void beforeClosePrices(StringBuilder line) {
+        if (this.atualDay >= 5) {
+            for (int j = this.atualDay; j > this.atualDay - 5; j--) {
+                line.append(closePrices[j]);
+                line.append(",");
+            }
+        } else {
+            for (int j = 0; j < 5; j++) {
+                line.append("NA");
+                line.append(",");
+            }
+        }
+    }
+
+    public void beforeRegressionPrices(StringBuilder line) {
+        if (this.atualDay >= 5) {
+            for (int j = this.atualDay; j > this.atualDay - 5; j--) {
+                line.append((diff[j]));
+                line.append(",");
+            }
+
+        } else {
+            for (int j = 0; j < 5; j++) {
+                line.append("NA");
+                line.append(",");
+            }
+        }
+
+    }
+
     @Override
     public void Venda(MarketData update) {
     }
 
     @Override
     public void Compra(MarketData update) {
-    }
-
-    public void finalize() {
-        if (retCodeSmaL == RetCode.Success && retCodeEmaL == RetCode.Success && retCodeWmaL == RetCode.Success
-                && retCodeSmaC == RetCode.Success && retCodeEmaC == RetCode.Success && retCodeWmaC == RetCode.Success
-                && retCodeRSIC == RetCode.Success && retCodeRSIL == RetCode.Success
-                && retCodeADXC == RetCode.Success && retCodeADXL == RetCode.Success
-                && retCodeSAR == RetCode.Success) {
-
-            for (int i = 0; i < days; i++) {
-                StringBuilder line = new StringBuilder();
-
-                if (i >= beginSMAL.value) {
-                    line.append(round(outSMAl[i - beginSMAL.value], 2));
-                    line.append(",");
-                } else {
-                    line.append("NA,");
-                }
-                if (i >= beginEMAL.value) {
-                    line.append(round(outEMAl[i - beginEMAL.value], 2));
-                    line.append(",");
-                } else {
-                    line.append("NA,");
-                }
-                if (i >= beginWMAL.value) {
-                    line.append(round(outWMAl[i - beginWMAL.value], 2));
-                    line.append(",");
-                } else {
-                    line.append("NA,");
-                }
-                if (i >= beginSMAC.value) {
-                    line.append(round(outSMAc[i - beginSMAC.value], 2));
-                    line.append(",");
-                } else {
-                    line.append("NA,");
-                }
-                if (i >= beginEMAC.value) {
-                    line.append(round(outEMAc[i - beginEMAC.value], 2));
-                    line.append(",");
-                } else {
-                    line.append("NA,");
-                }
-                if (i >= beginWMAC.value) {
-                    line.append(round(outWMAc[i - beginWMAC.value], 2));
-                    line.append(",");
-                } else {
-                    line.append("NA,");
-                }
-                if (i >= beginRSIC.value) {
-                    line.append(round(outRSIC[i - beginRSIC.value], 2));
-                    line.append(",");
-                } else {
-                    line.append("NA,");
-                }
-                if (i >= beginRSIL.value) {
-                    line.append(round(outRSIL[i - beginRSIL.value], 2));
-                    line.append(",");
-                } else {
-                    line.append("NA,");
-                }
-                if (i >= beginADXC.value) {
-                    line.append(round(outADXC[i - beginADXC.value], 2));
-                    line.append(",");
-                } else {
-                    line.append("NA,");
-                }
-                if (i >= beginADXL.value) {
-                    line.append(round(outADXL[i - beginADXL.value], 2));
-                    line.append(",");
-                } else {
-                    line.append("NA,");
-                }
-                if (i >= beginSAR.value) {
-                    line.append(round(outSAR[i - beginSAR.value], 2));
-                    line.append(",");
-                } else {
-                    line.append("NA,");
-                }
-
-                line.append(diff[i]);
-                line.append(",");
-                line.append(binary[i]);
-                line.append(",");
-                System.out.println(line.toString());
-                wd.Write(line.toString());
-            }
-        } else {
-            System.out.println("Error!");
-        }
     }
 
     public static double round(double value, int places) {
