@@ -14,7 +14,7 @@ import java.util.List;
 public class ReadData {
     public static List<MarketData> run() {
         List<MarketData> dataObjects = new ArrayList<>();
-        List<String> data = FileManager.stringReader("./datas/BBDC4.csv");
+        List<String> data = FileManager.stringReader("./datas/BBDC4_2.csv");
 
         for (String linha : data) {
             String[] dataDay = linha.split(",");
