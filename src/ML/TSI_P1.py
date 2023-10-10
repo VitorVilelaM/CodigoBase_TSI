@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
+# Utilizar h2o ou sklearn para mlp
 
 # Lendo os arquivo csv gerado pelo meu simulador 
 # Excluindo todas as linhas do meu DataFrame que não possuem valores
@@ -16,10 +17,10 @@ test = featuresTest.copy()
 
 def rf_holdout():
     # Random Forest com Holdout
-    rf_train_input = train.drop(columns=['CP','CP -1','CP -2','CP -3','CP -4','CP -5','R -1','R -2','R -3','R -4','R -5','R'])  # Features
+    rf_train_input = train.drop(columns=['R'])  # Features
     rf_train_output = rf_train_input.pop('B') # Target
 
-    rf_test_input = test.drop(columns=['CP','CP -1','CP -2','CP -3','CP -4','CP -5','R -1','R -2','R -3','R -4','R -5','R'])  # Features
+    rf_test_input = test.drop(columns=['R'])  # Features
     rf_test_output = rf_test_input.pop('B') # Target
 
     # Criando o meu Baseline
@@ -86,24 +87,6 @@ def rf_janela_deslizante(num_days):
 
     print(out)
 
-
-def teste():
-    teste = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1 ,1] 
-
-    date = test['Date'].values
-
-
-    print(len(teste))
-
-    out = []
-    for i in range(len(date)):
-        out.append([date[i], teste[i]])
-
-    print(out)
-
-#rf_holdout()
-rf_janela_deslizante(5) 
+rf_holdout()
+#rf_janela_deslizante(5) 
 ## Rede Neural - MLP

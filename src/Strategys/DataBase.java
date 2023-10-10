@@ -128,13 +128,16 @@ public class DataBase implements Strategy {
 
     @Override
     public void Update(MarketData update) {
+        
         this.closePrices[this.atualDay] = update.getClose();
         this.highPrices[this.atualDay] = update.getHigh();
         this.lowPrices[this.atualDay] = update.getLow();
 
         if (this.atualDay > 0) {
-            this.diff[atualDay - 1] = oftenPrice - update.getClose();
+            
             this.diff[this.atualDay] = this.closePrices[this.atualDay] - this.closePrices[this.atualDay - 1];
+            
+            
             if (diff[this.atualDay] > 0) {
                 this.binary[this.atualDay] = 1;
             } else {
@@ -264,7 +267,7 @@ public class DataBase implements Strategy {
     }
 
     public void beforeClosePrices(StringBuilder line) {
-        if (this.atualDay >= 5) {
+        if (this.atualDay > 5) {
             for (int j = this.atualDay; j > this.atualDay - 5; j--) {
                 line.append(closePrices[j]);
                 line.append(",");
@@ -278,9 +281,9 @@ public class DataBase implements Strategy {
     }
 
     public void beforeRegressionPrices(StringBuilder line) {
-        if (this.atualDay >= 5) {
+        if (this.atualDay > 5) {
             for (int j = this.atualDay; j > this.atualDay - 5; j--) {
-                line.append((diff[j]));
+                line.append((diff[j - 1]));
                 line.append(",");
             }
 
@@ -290,7 +293,6 @@ public class DataBase implements Strategy {
                 line.append(",");
             }
         }
-
     }
 
     @Override
