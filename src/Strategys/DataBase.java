@@ -26,6 +26,7 @@ public class DataBase implements Strategy {
     private double closePrices[];
     private double highPrices[];
     private double lowPrices[];
+    private Date dates[];
 
     private double outSMAl[];
     private double outEMAl[];
@@ -89,6 +90,7 @@ public class DataBase implements Strategy {
         this.closePrices = new double[totalDays];
         this.highPrices = new double[totalDays];
         this.lowPrices = new double[totalDays];
+        this.dates = new Date[totalDays];
 
         this.outSMAl = new double[totalDays];
         this.outEMAl = new double[totalDays];
@@ -128,20 +130,20 @@ public class DataBase implements Strategy {
 
     @Override
     public void Update(MarketData update) {
-        
+
         this.closePrices[this.atualDay] = update.getClose();
         this.highPrices[this.atualDay] = update.getHigh();
         this.lowPrices[this.atualDay] = update.getLow();
+        this.dates[this.atualDay] = update.getDate();
 
         if (this.atualDay > 0) {
-            
-            this.diff[this.atualDay] = this.closePrices[this.atualDay] - this.closePrices[this.atualDay - 1];
-            
-            
-            if (diff[this.atualDay] > 0) {
-                this.binary[this.atualDay] = 1;
+
+            this.diff[this.atualDay - 1] = this.closePrices[this.atualDay - 1] - this.closePrices[this.atualDay];
+
+            if (diff[this.atualDay - 1] > 0) {
+                this.binary[this.atualDay - 1] = 1;
             } else {
-                this.binary[this.atualDay] = 0;
+                this.binary[this.atualDay - 1] = 0;
             }
         }
 
@@ -167,7 +169,7 @@ public class DataBase implements Strategy {
 
     @Override
     public void Finish(MarketData finish) {
-        if (atualDay != days) {
+        if (atualDay != days && atualDay > 0) {
             if (retCodeSmaL == RetCode.Success && retCodeEmaL == RetCode.Success && retCodeWmaL == RetCode.Success
                     && retCodeSmaC == RetCode.Success && retCodeEmaC == RetCode.Success && retCodeWmaC == RetCode.Success
                     && retCodeRSIC == RetCode.Success && retCodeRSIL == RetCode.Success
@@ -177,16 +179,15 @@ public class DataBase implements Strategy {
                 StringBuilder line = new StringBuilder();
                 SimpleDateFormat sdf = new SimpleDateFormat("YYYYMMdd");
 
-                line.append(sdf.format(finish.getDate()));
+                line.append(sdf.format(dates[atualDay - 1]));
                 line.append(",");
-                
-                line.append(finish.getClose());
+
+                line.append(closePrices[atualDay - 1]);
                 line.append(",");
 
                 beforeClosePrices(line);
                 beforeRegressionPrices(line);
 
-                
                 if (atualDay >= beginSMAL.value) {
                     line.append(round(outSMAl[atualDay - beginSMAL.value], 2));
                     line.append(",");
@@ -253,23 +254,23 @@ public class DataBase implements Strategy {
                 } else {
                     line.append("NA,");
                 }
-                line.append(diff[atualDay]);
+                line.append(diff[atualDay - 1]);
                 line.append(",");
-                line.append(binary[atualDay]);
+                line.append(binary[atualDay - 1]);
                 //System.out.println(line.toString());
                 wd.Write(line.toString());
-                this.atualDay++;
-
             } else {
                 System.out.println("Error!");
             }
         }
+        this.atualDay++;
+
     }
 
     public void beforeClosePrices(StringBuilder line) {
         if (this.atualDay > 5) {
-            for (int j = this.atualDay; j > this.atualDay - 5; j--) {
-                line.append(closePrices[j]);
+            for (int j = this.atualDay - 1; j > this.atualDay - 6; j--) {
+                line.append(closePrices[j - 1]);
                 line.append(",");
             }
         } else {
@@ -282,7 +283,7 @@ public class DataBase implements Strategy {
 
     public void beforeRegressionPrices(StringBuilder line) {
         if (this.atualDay > 5) {
-            for (int j = this.atualDay; j > this.atualDay - 5; j--) {
+            for (int j = this.atualDay - 1; j > this.atualDay - 6   ; j--) {
                 line.append((diff[j - 1]));
                 line.append(",");
             }
@@ -293,6 +294,7 @@ public class DataBase implements Strategy {
                 line.append(",");
             }
         }
+
     }
 
     @Override
