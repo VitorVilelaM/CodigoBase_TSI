@@ -16,6 +16,8 @@ public class ReadData {
         List<MarketData> dataObjects = new ArrayList<>();
         List<String> data = FileManager.stringReader("./datas/BBDC4_2.csv");
 
+        System.out.println(data.size());
+        
         for (String linha : data) {
             String[] dataDay = linha.split(",");
             String d = dataDay[0];

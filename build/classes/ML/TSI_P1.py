@@ -4,6 +4,9 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import precision_score
+from sklearn.neural_network import MLPRegressor
+from sklearn.metrics import mean_absolute_error
+
 
 import h2o
 from h2o.estimators import H2ODeepLearningEstimator
@@ -22,6 +25,13 @@ featuresTest = dataBase[dataBase['Date'] > 20220000]
 train = featuresTrain.copy()
 test = featuresTest.copy()
 
+date = featuresTest['Date'].values
+result = featuresTest['B'].values
+
+outOtimo = []
+
+for i in range(len(date)):
+    outOtimo.append([date[i],0])
 
 ## Random Forest
 def rf_holdout():
@@ -29,13 +39,19 @@ def rf_holdout():
     rf_train_input = train.drop(columns=['Date','R'])  # Features
     rf_train_output = rf_train_input.pop('B') # Target
 
+    # 107,52 -> Melhor
+    # 68,94 -> O meu
+    # 5,02 -> Baseline
+
+    date =  test['Date'].values
+
     rf_test_input = test.drop(columns=['Date','R'])  # Features
     rf_test_output = rf_test_input.pop('B') # Target
 
     # Criando o meu Baseline
     baseline = []
     for i in range(0, rf_test_output.shape[0]):
-        baseline.append(1)
+        baseline.append(0)
 
     RandomForest = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=42)
     RandomForest.fit(rf_train_input, rf_train_output.values)
@@ -53,6 +69,16 @@ def rf_holdout():
     print("AUC:", auc_model)
     print("Recall:", recall_model)
     print("Precision:", precision_model)
+
+    print()
+    out = []
+
+    for i in range(len(predict)):
+        out.append([date[i],predict[i]])
+
+    df = pd.DataFrame(out)
+    caminho_arquivo = './output.csv'
+    df.to_csv(caminho_arquivo, index=False)
 
 def rf_janela_deslizante(num_days):
     # Random Forest com Janela Deslizante  
@@ -116,7 +142,7 @@ def rf_janela_deslizante(num_days):
     print(out)
 
 #rf_holdout()
-rf_janela_deslizante(5) 
+#rf_janela_deslizante(22) 
 
 
 ## Rede Neural - MLP
@@ -127,15 +153,62 @@ def mlp_holdout():
     mlp_train_input = train.drop(columns=['Date','B'])  # Features
     mlp_train_output = mlp_train_input.pop('R') # Target
 
+    data = h2o.import_file('./test.csv')
+
     mlp_test_input = test.drop(columns=['Date','B'])  # Features
     mlp_test_output = mlp_test_input.pop('R') # Target
     
     learning_rate = 0.01
 
     model = H2ODeepLearningEstimator(hidden=[50, 50], epochs=10)
-    model.train(x=mlp_train_input, y=mlp_train_output, training_frame= featuresTrain)
+    model.train(training_frame=mlp_train_input, y=mlp_train_output)
+    print(data)
+
+    h2o.shutdown()
 
 def mlp_janela_deslizante(num_days):
-    print()
+    mlp_train_input = train.drop(columns=['Date','B'])  # Features
+    mlp_train_output = mlp_train_input.pop('R') # Target
+
+    mlp_test_input = test.drop(columns=['Date','B'])  # Features
+    mlp_test_output = mlp_test_input.pop('R') # Target
+
+    baseline = [0]
+    for i in range(1, mlp_test_output.shape[0]):
+        baseline.append(mlp_test_output.values[i - 1])
+
+    #print(baseline)
+
+    
+    # 106,82 -> Melhor
+    # 106,76 -> O meu
+    # 15,24 -> Baseline
+
+    mlp = MLPRegressor(hidden_layer_sizes=(10, 5), # número de camadas ocultas e quantidade de neurônios
+                    max_iter=5000, # número máximo de iterações
+                    learning_rate_init=0.1, # taxa de aprendizado inicial
+                    solver="lbfgs", # estratégia: algoritmo da descida do gradiente estocástico
+                    activation="tanh", # função de ativação (sigmóide)
+                    learning_rate="constant", # taxa constante
+                    )
+    
+    # Treine o modelo
+    mlp.fit(mlp_train_input,mlp_train_output)    
+    predict = mlp.predict(mlp_test_input)
+
+    out = []
+    date = test['Date'].values
+    for i in range(len(predict)):
+        out.append([date[i], mlp_test_output.values[i]])
+
+    df = pd.DataFrame(out)
+    caminho_arquivo = './output.csv'
+    df.to_csv(caminho_arquivo, index=False)
+
+
+    mae = mean_absolute_error(mlp_test_output,predict)
+
+    print(mae)
 
 #mlp_holdout()
+mlp_janela_deslizante(5)

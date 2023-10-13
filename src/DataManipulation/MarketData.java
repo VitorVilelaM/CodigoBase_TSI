@@ -10,7 +10,7 @@ import java.text.SimpleDateFormat;
  */
 public class MarketData {
 
-    private DateFormat formatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss"); 
+    private DateFormat formatter = new SimpleDateFormat("MM/dd/yyyy"); 
     
     private Date date;    
     private Double open;
@@ -22,7 +22,7 @@ public class MarketData {
     public MarketData(String date, Double open,Double high, Double low, Double close, int volume){
         
         try {
-            this.date = formatter.parse(date);
+            this.date = formatter.parse(date.split(" ")[0]);
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
         }

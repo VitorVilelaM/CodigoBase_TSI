@@ -138,7 +138,7 @@ public class DataBase implements Strategy {
 
         if (this.atualDay > 0) {
 
-            this.diff[this.atualDay - 1] = this.closePrices[this.atualDay - 1] - this.closePrices[this.atualDay];
+            this.diff[this.atualDay - 1] = this.closePrices[this.atualDay] - this.closePrices[this.atualDay - 1];
 
             if (diff[this.atualDay - 1] > 0) {
                 this.binary[this.atualDay - 1] = 1;
